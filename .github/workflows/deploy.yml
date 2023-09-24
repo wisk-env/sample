@@ -5,13 +5,28 @@ name: EC2 auto deploy
 # Controls when the workflow will run
 on:
   push:
-    branches:
-      - master
+  pull_request:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  build:
+  rubocop:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Run rubocop
+        run: bundle exec rubocop --require rubocop-airbnb
+
+  EC2_deploy:
+    runs-on: ubuntu-latest
+    needs: rubocop
 
     steps:
       - name: Public IP Install
